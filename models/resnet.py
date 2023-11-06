@@ -1,29 +1,30 @@
+from __future__ import annotations
+
 import math
 
-import numpy as np
-import torch
-from torch import Tensor
-from torch.nn import Sequential as Seq, Linear, ReLU, Sigmoid, ModuleList, init
+from torch import Module, Tensor
+from torch.nn import Linear, ModuleList, ReLU, init
 
-import torch_geometric
-from torch_geometric.nn import MessagePassing
-import torch_geometric.transforms as T
-from torch_geometric.datasets import Planetoid
-from torch_geometric.nn.conv import GCNConv
-from torch_geometric.utils import to_dense_adj
-from matplotlib import pyplot as plt
 
 class ResNet(Module):
-    def __init__(self, in_dim, out_dim, hidden_dim, alpha=0, L=2, Cw=2):
+    def __init__(
+        self,
+        in_dim: int,
+        out_dim: int,
+        hidden_dim: int,
+        alpha: float = 0,
+        L: int = 2,
+        Cw: float = 2,
+    ):
         super(ResNet, self).__init__()
-        
+
         self.layers = ModuleList()
-        for l in range(L+1):
+        for layer in range(L + 1):
             self.layers.append(
                 Linear(
-                    in_dim if (l==0) else hidden_dim,
-                    out_dim if (l==L) else hidden_dim,
-                    bias = False,
+                    in_dim if (layer == 0) else hidden_dim,
+                    out_dim if (layer == L) else hidden_dim,
+                    bias=False,
                 )
             )
 
@@ -39,18 +40,19 @@ class ResNet(Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        for l, layer in enumerate(self.layers):
-            for p in layer.weight:
-                std = math.sqrt(1.0 / self.in_dim) 
-                if (l>0): std = math.sqrt(self.Cw / self.hidden_dim)
+        for layer, weights in enumerate(self.layers):
+            for p in weights.weight:
+                std = math.sqrt(1.0 / self.in_dim)
+                if layer > 0:
+                    std = math.sqrt(self.Cw / self.hidden_dim)
                 init.normal_(p.data, mean=0, std=std)
-            
-    def forward(self, x):
-        for l, layer in enumerate(self.layers):
-            if l==0:
-                x = layer(x)
-            elif (l>0) and (l<self.L):
-                x = self.alpha*x + layer(self.relu(x))
+
+    def forward(self, x: Tensor):
+        for layer, weights in enumerate(self.layers):
+            if layer == 0:
+                x = weights(x)
+            elif (layer > 0) and (layer < self.L):
+                x = self.alpha * x + weights(self.relu(x))
             else:
-                x = layer(self.relu(x))
+                x = weights(self.relu(x))
         return x
