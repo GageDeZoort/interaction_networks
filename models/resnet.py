@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import math
 
-from torch import Module, Tensor
-from torch.nn import Linear, ModuleList, ReLU, init
+from torch import Tensor
+from torch.nn import Linear, Module, ModuleList, ReLU, init
 
 
 class ResNet(Module):
