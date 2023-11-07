@@ -7,12 +7,28 @@ from models.interaction_network import InteractionNetwork
 
 
 class IGNN(nn.Module):
+    """GNN based on repeated interaction network (IN) convolutions
+    Args:
+    node_dims: node dims at input, intermediate, and output layers:
+               {"in": in_dim, "hidden": hidden_dim, "out": out}
+    edge_dims: edge dims at input, intermediate, and output layers:
+               {"in": in_dim, "hidden": hidden_dim, "out": out}
+    L: depth of the GNN, i.e. the number of IN layers
+    L_internal: depth of the fully-connected NNs in each IN layer
+    width: width of the node/edge networks in each IN layer
+    Cw: variance scale for Gaussian init
+    alpha_node: res. connection strength in each IN node network
+    alpha_edge: res. connection strength in each IN edge network
+    beta_node: res. connection strength between IN layers (node feats)
+    beta_edge: res. connection strength between IN layers (edge feats)
+    """
+
     def __init__(
         self,
         node_dims: int,
         edge_dims: int,
+        L: int = 3,
         L_internal: int = 3,
-        L: int = 4,
         width: int = 128,
         alpha_node: float = 0,
         alpha_edge: float = 0,

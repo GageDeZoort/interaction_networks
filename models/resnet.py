@@ -7,6 +7,16 @@ from torch.nn import Linear, Module, ModuleList, ReLU, init
 
 
 class ResNet(Module):
+    """Fully connected NN w/ residual connections and Gaussian init
+    Args:
+    in_dim: input dimension
+    out_dim: output dimension
+    hidden_dim: width, hidden dimension
+    alpha: strength of the residual connection
+    L: depth, number of hidden layers
+    Cw: variance scale for Gaussian init
+    """
+
     def __init__(
         self,
         in_dim: int,

@@ -8,6 +8,18 @@ from models.resnet import ResNet
 
 
 class InteractionNetwork(MessagePassing):
+    """Interaction network (IN) GNN layer
+    Args:
+    node_dims: dimension of node network, in the form
+               {"in": in_dim, "hidden": hidden_dim, "out": out_dim}
+    edge_dims: dimension of the edge network, in the form
+               {"in": in_dim, "hidden": hidden_dim, "out": out_dim}
+    L: depth of the ResNet node/edge networks
+    alpha_node: res. connection strength in the node network
+    alpha_edge: res. connection strength in the edge network
+    Cw: variance scale for Gaussian init
+    """
+
     def __init__(
         self,
         node_dims: int,
