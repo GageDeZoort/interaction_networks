@@ -60,10 +60,12 @@ class IGNN(nn.Module):
                     alpha_edge=alpha_edge,
                 )
             )
-
-        self.width = width
+            
         self.L = L
         self.L_internal = L_internal
+        self.width = width
+        self.beta_node = beta_node
+        self.beta_edge = beta_edge
         self.relu = ReLU()
 
     def forward(self, data):
@@ -73,8 +75,17 @@ class IGNN(nn.Module):
             data.edge_attr,
             data.deg,
         )
-        for _, weights in enumerate(self.layers):
-            x, edge_attr = weights(x, edge_index, edge_attr, deg)
-            x = x / x.pow(2).sum(1).sqrt().unsqueeze(1)
-            edge_attr = edge_attr / edge_attr.pow(2).sum(1).sqrt().unsqueeze(1)
+        for layer, weights in enumerate(self.layers):
+            x_new, edge_attr_new = weights(x, edge_index, edge_attr, deg)
+            x_new = x_new / x_new.pow(2).sum(1).sqrt().unsqueeze(1)
+            edge_attr_new = (
+                edge_attr_new
+                / edge_attr_new.pow(2).sum(1).sqrt().unsqueeze(1)
+            )
+            if layer>0 and layer<self.L:
+                x = x + self.beta_node * x_new
+                edge_attr = edge_attr + self.beta_edge * edge_attr_new
+            else:
+                x = x_new
+                edge_attr = edge_attr_new
         return x, edge_attr
